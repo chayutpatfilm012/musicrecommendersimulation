@@ -91,6 +91,7 @@ Output: Top 5 Recommended Songs
    python -m venv .venv
    source .venv/bin/activate      # Mac or Linux
    .venv\Scripts\activate         # Windows
+   ```
 
 2. Install dependencies
 
@@ -169,8 +170,6 @@ Top 5 recommendations
      * energy closeness (+0.95)
 ------------------------------------------------------------
 ```
-
-**Screenshot or video** *(optional)*: <!-- Insert a screenshot or demo video link here -->
 
 ---
 
@@ -451,7 +450,5 @@ More details are in the [model card](model_card.md).
 
 [**Model Card**](model_card.md)
 
-Building VibeFinder showed me that a recommender turns data into predictions by following simple rules that a person chose. Each song is just a list of labels and numbers, and the "recommendation" is the result of adding up points and sorting. Even with only five features, the results looked reasonable for clear tastes like Chill Lofi or Intense Rock, which made it easy to forget that the system does not actually understand music.
-
-The stress tests showed where bias can hide. Because genre was worth 2.0 points, the system kept listeners inside their favorite genre, and listeners whose genre had only one song got weak recommendations. When I shifted the weights toward energy, the bias did not disappear. It just moved. This made me realize that real apps can create filter bubbles in the same way, and that the people who choose the weights and the data have a big influence on what listeners get to hear.
+Building VibeFinder showed me that a recommender is really just simple rules that a person chose: each song is a few labels and numbers, and a "recommendation" is the result of adding up points and sorting. The results looked right for clear tastes like Chill Lofi and Intense Rock, which made it easy to forget that the system doesn't actually understand music. The stress tests showed where bias hides, because genre was worth 2.0 points and kept listeners stuck in their favorite genre, while fans of genres with only one song got weak lists. When I shifted the weights toward energy, the bias didn't go away; it just moved. Now I understand that the people who choose the weights and the data have a big say in what listeners get to hear.
 
