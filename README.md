@@ -2,16 +2,9 @@
 
 ## Project Summary
 
-In this project you will build and explain a small music recommender system.
+**VibeFinder 1.0** is a small command-line music recommender built for a classroom project. It reads a catalog of 20 fictional songs from `data/songs.csv` and compares each song to a listener's taste profile: a favorite genre, a mood, an energy level, and optional valence and acousticness levels. Every song gets a score out of 5.5, and the program prints the top 5 songs with the reasons behind each score.
 
-Your goal is to:
-
-- Represent songs and a user "taste profile" as data
-- Design a scoring rule that turns that data into recommendations
-- Evaluate what your system gets right and wrong
-- Reflect on how this mirrors real world AI recommenders
-
-Replace this paragraph with your own summary of what your version does.
+I also stress-tested the system with four very different listener profiles and ran a weight-shift experiment to see how the scoring weights change the results. The goal was not only to make recommendations, but to understand where a simple recommender works well and where it shows bias.
 
 ---
 
@@ -414,38 +407,51 @@ Top 5 recommendations
 
 ## Experiments You Tried
 
-Use this section to document the experiments you ran. For example:
+### 1. Expanding the catalog
 
-- What happened when you changed the weight on genre from 2.0 to 0.5
-- What happened when you added tempo or valence to the score
-- How did your system behave for different types of users
+The starter file had 10 songs. I added 10 fictional songs with new genres (R&B, reggae, metal, country, classical, hip hop, folk, EDM, blues) and new moods (romantic, angry, nostalgic, peaceful, melancholic, confident, energetic, sad). This gave the system calm, sad, and very intense songs that were missing before.
+
+### 2. Mood weight and similar moods
+
+For the Chill Lofi profile, I compared giving mood 1.0 points versus 1.5 points. The ranking order did not change, because the relaxing songs from other genres were labeled "relaxed" or "peaceful", not "chill", so they got zero mood points either way. Giving partial credit (0.75) for similar moods fixed this: Coffee Shop Stories (jazz, relaxed) rose to 2.63 and joined the top 5. I kept this rule in the final version.
+
+### 3. Stress test with four profiles
+
+I ran High-Energy Pop, Chill Lofi, Intense Rock, and Conflicting Preferences (metal, peaceful, energy 0.90) with `python -m src.main --stress`. The full output is in [Stress Test Results](#stress-test-results), and the profile-by-profile comparison is in the [model card](model_card.md).
+
+### 4. Weight shift: less genre, more energy
+
+I temporarily changed the genre weight from 2.0 to 1.0 and the energy weight from 1.0 to 2.0. The maximum score stayed at 5.5.
+
+| Profile | What changed |
+|---|---|
+| High-Energy Pop | Rooftop Lights (indie pop, happy) moved up to #2 with 3.22, above Gym Hero (pop, intense) at 2.94 |
+| Chill Lofi | Same order. Spacewalk Thoughts rose from 3.35 to 4.28, much closer to the lofi songs |
+| Intense Rock | Same order. Only the scores changed |
+| Conflicting Preferences | Ranks 3–5 changed from calm lofi and ambient songs to high-energy Storm Runner, Gym Hero, and Neon Pulse. Winter Nocturne (energy 0.18) stayed at #2 |
+
+The shift reduced genre bias, but energy became the biggest factor, so very different songs started ranking as if they were the same. I restored the original weights afterward, and all results in this README use the original weights.
 
 ---
 
 ## Limitations and Risks
 
-Summarize some limitations of your recommender.
+- **Tiny catalog:** There are only 20 songs, and 13 of the 16 genres have just one song. Most listeners get one good match, and the rest of the list is filled by energy alone.
+- **Genre bias and filter bubbles:** Genre is worth the most points (2.0), so the system keeps recommending the same genre. The Chill Lofi top 3 was all lofi, and two songs were by the same artist.
+- **Exact label matching:** "indie pop" does not count as "pop", and a genre that is not in the catalog (like K-pop) gets no genre points at all.
+- **Conflicting tastes:** A mood match can outweigh a large energy difference, so a high-energy metal fan was recommended calm classical and lofi songs.
+- **No input checks:** An empty profile scores every song 0.00, an energy of 1.5 can give negative points, and a non-number like `"high"` crashes the program.
+- **Limited understanding of music:** The system does not use lyrics, language, tempo, listening history, or what other people like. It cannot predict what real users will enjoy.
 
-Examples:
-
-- It only works on a tiny catalog
-- It does not understand lyrics or language
-- It might over favor one genre or mood
-
-You will go deeper on this in your model card.
+More details are in the [model card](model_card.md).
 
 ---
 
 ## Reflection
 
-Read and complete `model_card.md`:
-
 [**Model Card**](model_card.md)
 
-Write 1 to 2 paragraphs here about what you learned:
+Building VibeFinder showed me that a recommender turns data into predictions by following simple rules that a person chose. Each song is just a list of labels and numbers, and the "recommendation" is the result of adding up points and sorting. Even with only five features, the results looked reasonable for clear tastes like Chill Lofi or Intense Rock, which made it easy to forget that the system does not actually understand music.
 
-- about how recommenders turn data into predictions
-- about where bias or unfairness could show up in systems like this
-
-
+The stress tests showed where bias can hide. Because genre was worth 2.0 points, the system kept listeners inside their favorite genre, and listeners whose genre had only one song got weak recommendations. When I shifted the weights toward energy, the bias did not disappear. It just moved. This made me realize that real apps can create filter bubbles in the same way, and that the people who choose the weights and the data have a big influence on what listeners get to hear.
 
