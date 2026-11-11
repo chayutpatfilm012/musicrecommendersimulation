@@ -9,6 +9,8 @@ You will implement the functions in recommender.py:
 - recommend_songs
 """
 
+import argparse
+
 try:
     # Works with `python -m src.main` from the project root.
     from src.recommender import load_songs, recommend_songs
@@ -19,10 +21,24 @@ except ImportError:
 
 WIDTH = 60
 
+# Profiles used by `--stress` to probe the scoring logic.
+STRESS_PROFILES = {
+    "High-Energy Pop": {"genre": "pop", "mood": "happy", "energy": 0.90},
+    "Chill Lofi": {
+        "genre": "lofi",
+        "mood": "chill",
+        "energy": 0.35,
+        "valence": 0.60,
+        "acousticness": 0.80,
+    },
+    "Intense Rock": {"genre": "rock", "mood": "intense", "energy": 0.95},
+    "Conflicting Preferences": {"genre": "metal", "mood": "peaceful", "energy": 0.90},
+}
 
-def print_profile(user_prefs: dict) -> None:
+
+def print_profile(user_prefs: dict, title: str = "MUSIC RECOMMENDER") -> None:
     print("=" * WIDTH)
-    print("  MUSIC RECOMMENDER".center(WIDTH))
+    print(f"  {title}".center(WIDTH))
     print("=" * WIDTH)
     print("User profile:")
     for key, value in user_prefs.items():
@@ -46,9 +62,29 @@ def print_recommendations(recommendations: list) -> None:
         print("-" * WIDTH)
 
 
+def run_stress_test(songs: list) -> None:
+    for number, (name, user_prefs) in enumerate(STRESS_PROFILES.items(), start=1):
+        recommendations = recommend_songs(user_prefs, songs, k=5)
+        print_profile(user_prefs, title=f"STRESS TEST {number}: {name}")
+        print_recommendations(recommendations)
+        print()
+
+
 def main() -> None:
+    parser = argparse.ArgumentParser(description="Music Recommender Simulation")
+    parser.add_argument(
+        "--stress",
+        action="store_true",
+        help="run the top 5 for each stress-test profile instead of the default profile",
+    )
+    args = parser.parse_args()
+
     songs = load_songs("data/songs.csv")
     print(f"Loaded {len(songs)} songs.\n")
+
+    if args.stress:
+        run_stress_test(songs)
+        return
 
     # Starter example profile
     user_prefs = {"genre": "pop", "mood": "happy", "energy": 0.8}

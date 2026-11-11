@@ -181,6 +181,237 @@ Top 5 recommendations
 
 ---
 
+## Stress Test Results
+
+To check how the scoring logic behaves for very different listeners, I ran four profiles through the unchanged recommender:
+
+```bash
+python -m src.main --stress
+```
+
+The command first prints `Loading songs from data/songs.csv...` and `Loaded 20 songs.`, then the top 5 for each profile below. The output is copied from the terminal exactly.
+
+### 1. High-Energy Pop
+
+```text
+============================================================
+                STRESS TEST 1: High-Energy Pop
+============================================================
+User profile:
+  - genre        : pop
+  - mood         : happy
+  - energy       : 0.9
+
+Top 5 recommendations
+------------------------------------------------------------
+1. Sunrise City - Neon Echo
+   Genre: pop | Mood: happy
+   Score: 4.42
+   Reasons:
+     * genre match (+2.0)
+     * mood match (+1.5)
+     * energy closeness (+0.92)
+------------------------------------------------------------
+2. Gym Hero - Max Pulse
+   Genre: pop | Mood: intense
+   Score: 2.97
+   Reasons:
+     * genre match (+2.0)
+     * energy closeness (+0.97)
+------------------------------------------------------------
+3. Rooftop Lights - Indigo Parade
+   Genre: indie pop | Mood: happy
+   Score: 2.36
+   Reasons:
+     * mood match (+1.5)
+     * energy closeness (+0.86)
+------------------------------------------------------------
+4. Storm Runner - Voltline
+   Genre: rock | Mood: intense
+   Score: 0.99
+   Reasons:
+     * energy closeness (+0.99)
+------------------------------------------------------------
+5. Neon Pulse - Static Bloom
+   Genre: edm | Mood: energetic
+   Score: 0.95
+   Reasons:
+     * energy closeness (+0.95)
+------------------------------------------------------------
+```
+
+### 2. Chill Lofi
+
+```text
+============================================================
+                  STRESS TEST 2: Chill Lofi
+============================================================
+User profile:
+  - genre        : lofi
+  - mood         : chill
+  - energy       : 0.35
+  - valence      : 0.6
+  - acousticness : 0.8
+
+Top 5 recommendations
+------------------------------------------------------------
+1. Library Rain - Paper Lanterns
+   Genre: lofi | Mood: chill
+   Score: 5.47
+   Reasons:
+     * genre match (+2.0)
+     * mood match (+1.5)
+     * energy closeness (+1.00)
+     * valence closeness (+0.50)
+     * acousticness closeness (+0.47)
+------------------------------------------------------------
+2. Midnight Coding - LoRoom
+   Genre: lofi | Mood: chill
+   Score: 5.37
+   Reasons:
+     * genre match (+2.0)
+     * mood match (+1.5)
+     * energy closeness (+0.93)
+     * valence closeness (+0.48)
+     * acousticness closeness (+0.45)
+------------------------------------------------------------
+3. Focus Flow - LoRoom
+   Genre: lofi | Mood: focused
+   Score: 4.69
+   Reasons:
+     * genre match (+2.0)
+     * similar mood (+0.75)
+     * energy closeness (+0.95)
+     * valence closeness (+0.49)
+     * acousticness closeness (+0.49)
+------------------------------------------------------------
+4. Spacewalk Thoughts - Orbit Bloom
+   Genre: ambient | Mood: chill
+   Score: 3.35
+   Reasons:
+     * mood match (+1.5)
+     * energy closeness (+0.93)
+     * valence closeness (+0.47)
+     * acousticness closeness (+0.44)
+------------------------------------------------------------
+5. Coffee Shop Stories - Slow Stereo
+   Genre: jazz | Mood: relaxed
+   Score: 2.63
+   Reasons:
+     * similar mood (+0.75)
+     * energy closeness (+0.98)
+     * valence closeness (+0.45)
+     * acousticness closeness (+0.46)
+------------------------------------------------------------
+```
+
+### 3. Intense Rock
+
+```text
+============================================================
+                 STRESS TEST 3: Intense Rock
+============================================================
+User profile:
+  - genre        : rock
+  - mood         : intense
+  - energy       : 0.95
+
+Top 5 recommendations
+------------------------------------------------------------
+1. Storm Runner - Voltline
+   Genre: rock | Mood: intense
+   Score: 4.46
+   Reasons:
+     * genre match (+2.0)
+     * mood match (+1.5)
+     * energy closeness (+0.96)
+------------------------------------------------------------
+2. Gym Hero - Max Pulse
+   Genre: pop | Mood: intense
+   Score: 2.48
+   Reasons:
+     * mood match (+1.5)
+     * energy closeness (+0.98)
+------------------------------------------------------------
+3. Neon Pulse - Static Bloom
+   Genre: edm | Mood: energetic
+   Score: 1.00
+   Reasons:
+     * energy closeness (+1.00)
+------------------------------------------------------------
+4. Iron Tempest - Grave Sentinel
+   Genre: metal | Mood: angry
+   Score: 0.98
+   Reasons:
+     * energy closeness (+0.98)
+------------------------------------------------------------
+5. Sunrise City - Neon Echo
+   Genre: pop | Mood: happy
+   Score: 0.87
+   Reasons:
+     * energy closeness (+0.87)
+------------------------------------------------------------
+```
+
+### 4. Conflicting Preferences
+
+```text
+============================================================
+            STRESS TEST 4: Conflicting Preferences
+============================================================
+User profile:
+  - genre        : metal
+  - mood         : peaceful
+  - energy       : 0.9
+
+Top 5 recommendations
+------------------------------------------------------------
+1. Iron Tempest - Grave Sentinel
+   Genre: metal | Mood: angry
+   Score: 2.93
+   Reasons:
+     * genre match (+2.0)
+     * energy closeness (+0.93)
+------------------------------------------------------------
+2. Winter Nocturne - Clara Voss
+   Genre: classical | Mood: peaceful
+   Score: 1.78
+   Reasons:
+     * mood match (+1.5)
+     * energy closeness (+0.28)
+------------------------------------------------------------
+3. Midnight Coding - LoRoom
+   Genre: lofi | Mood: chill
+   Score: 1.27
+   Reasons:
+     * similar mood (+0.75)
+     * energy closeness (+0.52)
+------------------------------------------------------------
+4. Library Rain - Paper Lanterns
+   Genre: lofi | Mood: chill
+   Score: 1.20
+   Reasons:
+     * similar mood (+0.75)
+     * energy closeness (+0.45)
+------------------------------------------------------------
+5. Spacewalk Thoughts - Orbit Bloom
+   Genre: ambient | Mood: chill
+   Score: 1.13
+   Reasons:
+     * similar mood (+0.75)
+     * energy closeness (+0.38)
+------------------------------------------------------------
+```
+
+### What Surprised Me and Limitations
+
+- **Genre dominance:** A genre match (+2.0) is worth more than a mood match (+1.5). For the High-Energy Pop user, *Gym Hero* (pop, **intense**) ranks above *Rooftop Lights* (indie pop, **happy**), even though Rooftop Lights fits the happy mood better. Exact matching also treats `indie pop` and `pop` as completely different genres.
+- **Conflicting preferences:** For metal + peaceful + energy 0.90, ranks 2–5 are calm classical, lofi, and ambient songs with energy far below 0.90. A mood match (+1.5 or +0.75) outweighs a large energy gap, which can cost at most 1.0 point. The system cannot tell that "peaceful metal" is a contradiction, so it mixes two very different styles.
+- **Limited genre diversity:** Most genres have only one song in the 20-song catalog. After *Storm Runner*, the Intense Rock list falls back to pop, edm, and metal, ranked almost entirely by energy (scores around 1.0). The Chill Lofi user gets three lofi songs in a row, while every other profile runs out of matching songs after one or two picks.
+- **Missing input validation:** The scoring code does not check inputs. An empty profile gives every song 0.00, an energy outside 0–1 (for example 1.5) can produce negative closeness points, and a non-number such as `"high"` crashes with a `ValueError`. Missing valence and acousticness are skipped, so the maximum score is 4.5 for three of these profiles but 5.5 for Chill Lofi, which means scores cannot be compared across profiles.
+
+---
+
 ## Experiments You Tried
 
 Use this section to document the experiments you ran. For example:
